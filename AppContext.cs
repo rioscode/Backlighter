@@ -11,13 +11,17 @@ namespace Backlighter;
 
 public class AppContext : ApplicationContext
 {
-    private NotifyIcon _trayIcon;
+    // Signal data to turn on or off backlighting on MX Keys
+    private readonly byte[] _offSignal = [0x10, 0x01, 0x0b, 0x1f, 0x00, 0x00, 0xff];
+    private readonly byte[] _onSignal = [0x10, 0x01, 0x0b, 0x1f, 0x01, 0x00, 0xff];
+
+    private readonly NotifyIcon _trayIcon;
     private IDevice _unifyingReceiver;
 
     public AppContext()
     {
         var exitMenu = new ToolStripMenuItem("Exit");
-        exitMenu.Click += ClickExit;
+        exitMenu.Click += CloseApplication;
 
         var mainMenu = new ContextMenuStrip();
         mainMenu.Items.AddRange(new ToolStripItem[]
@@ -46,40 +50,28 @@ public class AppContext : ApplicationContext
             .CreateWindowsHidDeviceFactory();
 
         // Get connected device definitions
-        var deviceDefinitions = (await hidFactory.GetConnectedDeviceDefinitionsAsync())
-            .ToList();
-        if (deviceDefinitions.Count == 0)
+        var deviceDefinitions = await hidFactory.GetConnectedDeviceDefinitionsAsync();
+        var deviceDefinition = deviceDefinitions.FirstOrDefault();
+        if (deviceDefinition == null)
             return;
 
         // Get the device from its definition
-        _unifyingReceiver = await hidFactory
-            .GetDeviceAsync(deviceDefinitions.First());
+        _unifyingReceiver = await hidFactory.GetDeviceAsync(deviceDefinition);
 
         // Initialize the device
         await _unifyingReceiver.InitializeAsync();
 
-        // Signal data to turn on or off backlighting on MX Keys
-        var off_signal = new byte[]
-        {
-            0x10, 0x01, 0x0b, 0x1f, 0x00, 0x00, 0xff
-        };
-
-        var on_signal = new byte[]
-        {
-            0x10, 0x01, 0x0b, 0x1f, 0x01, 0x00, 0xff
-        };
-
         // Send the signals to turn off and on the backlighting
         while (true)
         {
-            await _unifyingReceiver.WriteAsync(off_signal).ConfigureAwait(false);
+            await _unifyingReceiver.WriteAsync(_offSignal).ConfigureAwait(false);
             Thread.Sleep(50);
-            await _unifyingReceiver.WriteAsync(on_signal).ConfigureAwait(false);
+            await _unifyingReceiver.WriteAsync(_onSignal).ConfigureAwait(false);
             Thread.Sleep(180000);
         }
     }
 
-    private void ClickExit(object sender, EventArgs e)
+    private void CloseApplication(object sender, EventArgs e)
     {
         if (_unifyingReceiver != null)
             _unifyingReceiver.Dispose();
