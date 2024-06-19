@@ -22,6 +22,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
+  
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <OutputPath>bin\</OutputPath>
@@ -29,6 +30,7 @@
   <PropertyGroup>
     <ApplicationIcon>keyboard.ico</ApplicationIcon>
   </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="Costura.Fody">
       <Version>5.7.0</Version>
@@ -41,9 +43,11 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
   </ItemGroup>
+  
   <ItemGroup>
     <Content Include="keyboard.ico" />
   </ItemGroup>
+  
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
       <Visible>False</Visible>
@@ -56,4 +60,5 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  
 </Project>
